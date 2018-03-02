@@ -45,6 +45,8 @@ static noPollConnOpts * createConnOpts (char * extra_headers, bool secure);
 static noPollConn * nopoll_tls_common_conn (noPollCtx  * ctx,char * serverAddr,char *serverPort,char * extra_headers);
 static char* build_extra_headers( const char *auth, const char *device_id,
                                   const char *user_agent, const char *convey );
+//Flag for Connection Fallback
+int FLAGS_FALLBACK_CONN = 0;
 
 /*----------------------------------------------------------------------------*/
 /*                             External Functions                             */
@@ -174,6 +176,8 @@ int createNopollConnection(noPollCtx *ctx)
 				close_and_unref_connection(get_global_conn());
 				set_global_conn(NULL);
 				initial_retry = true;
+				// Change the flag to fallback the connection
+				FLAGS_FALLBACK_CONN = !FLAGS_FALLBACK_CONN;
 				
 				ParodusInfo("Waiting with backoffRetryTime %d seconds\n", backoffRetryTime);
 				sleep(backoffRetryTime);
@@ -210,6 +214,8 @@ int createNopollConnection(noPollCtx *ctx)
 						ParodusInfo("Trying to Connect to new Redirected server : %s with port : %s\n", server_Address, port);
 					//reset c=2 to start backoffRetryTime as retrying using new redirect server
 					c = 2;
+					//In case of Redirection connection failure, server address will get changed to default address and port from config. So during redirection fallback is not required, connect with same default connection
+					FLAGS_FALLBACK_CONN = !FLAGS_FALLBACK_CONN;
 				}
 				else if(status == 403) 
 				{
@@ -244,6 +250,8 @@ int createNopollConnection(noPollCtx *ctx)
 				close_and_unref_connection(get_global_conn());
 				set_global_conn(NULL);
 				initial_retry = true;
+				// Change the flag to fallback the connection
+				FLAGS_FALLBACK_CONN = !FLAGS_FALLBACK_CONN;
 				
 			}
 			else 
@@ -281,6 +289,8 @@ int createNopollConnection(noPollCtx *ctx)
 				}			
 			}
 			initial_retry = true;
+			// Change the flag to fallback the connection
+			FLAGS_FALLBACK_CONN = !FLAGS_FALLBACK_CONN;
 			ParodusInfo("Waiting with backoffRetryTime %d seconds\n", backoffRetryTime);
 			sleep(backoffRetryTime);
 			c++;
@@ -310,6 +320,8 @@ int createNopollConnection(noPollCtx *ctx)
 	heartBeatTimer = 0;
 	// Reset connErr flag on successful connection
 	connErr = 0;
+	// Reset the fallback flag to default IPv6
+	FLAGS_FALLBACK_CONN = 0;
 	reconnect_reason = "webpa_process_starts";
 	LastReasonStatus =false;
 	ParodusPrint("LastReasonStatus reset after successful connection\n");
@@ -353,14 +365,18 @@ static noPollConn * nopoll_tls_common_conn (noPollCtx  * ctx,char * serverAddr,c
             ParodusInfo("Connecting in Ipv6 mode\n");
             connection = nopoll_conn_tls_new6 (ctx, opts,serverAddr,serverPort,NULL,get_parodus_cfg()->webpa_path_url,NULL,NULL);
         } else {
-            ParodusInfo("Try connecting with Ipv6 mode\n");
-            connection = nopoll_conn_tls_new6 (ctx, opts,serverAddr,serverPort,NULL,get_parodus_cfg()->webpa_path_url,NULL,NULL);
-            if(connection == NULL)
-            {
-                ParodusInfo("Ipv6 connection failed. Try connecting with Ipv4 mode \n");
-                opts = createConnOpts(extra_headers, true);
-                connection = nopoll_conn_tls_new (ctx, opts,serverAddr,serverPort,NULL,get_parodus_cfg()->webpa_path_url,NULL,NULL);
-            }
+			//Connects with IPv6 connection by default, fallbacks to IPv4 connection on failure case
+			if(!FLAGS_FALLBACK_CONN)
+			{
+				ParodusInfo("Try connecting with Ipv6 mode\n");
+				connection = nopoll_conn_tls_new6 (ctx, opts,serverAddr,serverPort,NULL,get_parodus_cfg()->webpa_path_url,NULL,NULL);
+			}
+			if(!nopoll_conn_is_ok(connection))
+			{
+				ParodusInfo("Ipv6 connection failed. Try connecting with Ipv4 mode \n");
+				opts = createConnOpts(extra_headers, true);
+				connection = nopoll_conn_tls_new (ctx, opts,serverAddr,serverPort,NULL,get_parodus_cfg()->webpa_path_url,NULL,NULL);
+			}
         }
         return connection;
 }
