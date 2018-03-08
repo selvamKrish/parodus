@@ -143,7 +143,7 @@ set(SOURCES test_client_list.c ../src/client_list.c
  ../src/service_alive.c ../src/upstream.c ../src/networking.c ../src/nopoll_helpers.c 
  ../src/downstream.c ../src/connection.c ../src/nopoll_handlers.c 
  ../src/ParodusInternal.c ../src/thread_tasks.c ../src/conn_interface.c 
- ../src/partners_check.c ${PARODUS_COMMON_SRC})
+ ../src/partners_check.c ../src/sysevent_handler.c ${PARODUS_COMMON_SRC})
 
 if (ENABLE_SESHAT)
 set(SOURCES ${SOURCES} ../src/seshat_interface.c)
@@ -165,7 +165,7 @@ target_link_libraries (test_client_list ${PARODUS_CONN_LIBS} ${PARODUS_COMMON_LI
 add_test(NAME test_service_alive COMMAND ${MEMORY_CHECK} ./test_service_alive)
 #add_executable(test_service_alive test_service_alive.c ../src/client_list.c ../src/service_alive.c ../src/upstream.c ../src/networking.c ../src/nopoll_helpers.c ../src/nopoll_handlers.c ../src/config.c ../src/connection.c ../src/ParodusInternal.c ../src/downstream.c ../src/thread_tasks.c ../src/conn_interface.c ../src/partners_check.c ${PARODUS_COMMON_SRC})
 #target_link_libraries (test_service_alive ${PARODUS_COMMON_LIBS})
-set(SOURCES test_service_alive.c ../src/client_list.c ../src/service_alive.c ../src/upstream.c ../src/networking.c ../src/nopoll_helpers.c ../src/nopoll_handlers.c ../src/config.c ../src/connection.c ../src/ParodusInternal.c ../src/downstream.c ../src/thread_tasks.c ../src/conn_interface.c ../src/partners_check.c ${PARODUS_COMMON_SRC})
+set(SOURCES test_service_alive.c ../src/client_list.c ../src/service_alive.c ../src/upstream.c ../src/networking.c ../src/nopoll_helpers.c ../src/nopoll_handlers.c ../src/config.c ../src/connection.c ../src/ParodusInternal.c ../src/downstream.c ../src/thread_tasks.c ../src/conn_interface.c ../src/partners_check.c ../src/sysevent_handler.c ${PARODUS_COMMON_SRC})
 if (ENABLE_SESHAT)
 set(SOURCES ${SOURCES} ../src/seshat_interface.c)
 else()
@@ -222,7 +222,7 @@ target_link_libraries (test_thread_tasks -lcmocka ${PARODUS_COMMON_LIBS} )
 #   test_conn_interface
 #-------------------------------------------------------------------------------
 add_test(NAME test_conn_interface COMMAND ${MEMORY_CHECK} ./test_conn_interface)
-set(SOURCES test_conn_interface.c ../src/conn_interface.c ../src/config.c ../src/string_helpers.c ../src/mutex.c)
+set(SOURCES test_conn_interface.c ../src/conn_interface.c ../src/config.c ../src/string_helpers.c ../src/mutex.c ../src/sysevent_handler.c)
 if (ENABLE_SESHAT)
 set(SOURCES ${SOURCES} ../src/seshat_interface.c)
 else()
@@ -275,7 +275,7 @@ if (INTEGRATION_TESTING)
 #-------------------------------------------------------------------------------
 add_test(NAME simple_connection COMMAND ${MEMORY_CHECK} ./simple_connection)
 set(SOURCES simple_connection.c ${PARODUS_COMMON_SRC} ../src/upstream.c ../src/conn_interface.c
- ../src/thread_tasks.c ../src/downstream.c ../src/networking.c ../src/nopoll_helpers.c ../src/nopoll_handlers.c ../src/connection.c ../src/ParodusInternal.c ../src/client_list.c ../src/partners_check.c ../src/service_alive.c)
+ ../src/thread_tasks.c ../src/downstream.c ../src/networking.c ../src/nopoll_helpers.c ../src/nopoll_handlers.c ../src/connection.c ../src/ParodusInternal.c ../src/client_list.c ../src/partners_check.c ../src/service_alive.c ../src/sysevent_handler.c)
 if (ENABLE_SESHAT)
 set(SOURCES ${SOURCES} ../src/seshat_interface.c)
 else()
@@ -288,8 +288,7 @@ target_link_libraries (simple_connection ${PARODUS_CONN_LIBS} ${PARODUS_COMMON_L
 #   simple test
 #-------------------------------------------------------------------------------
 add_test(NAME simple COMMAND ${MEMORY_CHECK} ./simple)
-set(SOURCES simple.c ../src/upstream.c ../src/conn_interface.c ../src/downstream.c ../src/thread_tasks.c ../src/networking.c ../src/nopoll_helpers.c ../src/nopoll_handlers.c ../src/string_helpers.c ../src/mutex.c ../src/time.c
- ../src/config.c ../src/connection.c ../src/ParodusInternal.c ../src/spin_thread.c ../src/client_list.c ../src/partners_check.c ../src/service_alive.c)
+set(SOURCES simple.c ../src/upstream.c ../src/conn_interface.c ../src/downstream.c ../src/thread_tasks.c ../src/networking.c ../src/nopoll_helpers.c ../src/nopoll_handlers.c ../src/string_helpers.c ../src/mutex.c ../src/time.c ../src/config.c ../src/connection.c ../src/ParodusInternal.c ../src/spin_thread.c ../src/client_list.c ../src/partners_check.c ../src/service_alive.c ../src/sysevent_handler.c)
 if (ENABLE_SESHAT)
 set(SOURCES ${SOURCES} ../src/seshat_interface.c)
 else()

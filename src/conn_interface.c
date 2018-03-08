@@ -33,6 +33,7 @@
 #include "spin_thread.h"
 #include "service_alive.h"
 #include "seshat_interface.h"
+#include "sysevent_handler.h"
 
 /*----------------------------------------------------------------------------*/
 /*                                   Macros                                   */
@@ -86,7 +87,7 @@ void createSocketConnection(void *config_in, void (* initKeypress)())
     ParodusMsgQ = NULL;
     StartThread(messageHandlerTask);
     StartThread(serviceAliveTask);
-
+    ConnFlushHandler();
     if (NULL != initKeypress) 
     {
         (* initKeypress) ();
