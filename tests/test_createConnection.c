@@ -235,8 +235,13 @@ void test_createSecureConnection()
 
 	expect_value(nopoll_conn_tls_new6, (intptr_t)ctx, (intptr_t)ctx);
     expect_string(nopoll_conn_tls_new6, (intptr_t)host_ip, HOST_IP);
+   
     will_return(nopoll_conn_tls_new6, NULL);
     expect_function_call(nopoll_conn_tls_new6);
+    will_return(nopoll_conn_is_ok, nopoll_false);
+    expect_function_call(nopoll_conn_is_ok);
+    will_return(nopoll_conn_is_ok, nopoll_false);
+    expect_function_call(nopoll_conn_is_ok);
     
 	expect_value(nopoll_conn_tls_new, (intptr_t)ctx, (intptr_t)ctx);
     expect_string(nopoll_conn_tls_new, (intptr_t)host_ip, HOST_IP);
@@ -281,7 +286,6 @@ void test_createConnection()
 
     will_return(getWebpaConveyHeader, (intptr_t)"WebPA-1.6 (TG1682)");
     expect_function_call(getWebpaConveyHeader);
-
 
     expect_value(nopoll_conn_new_opts, (intptr_t)ctx, (intptr_t)ctx);
     expect_string(nopoll_conn_new_opts, (intptr_t)host_ip, HOST_IP);
@@ -333,6 +337,11 @@ void test_createConnectionConnNull()
     will_return(nopoll_conn_tls_new6, NULL);
     expect_function_call(nopoll_conn_tls_new6);
     
+    will_return(nopoll_conn_is_ok, nopoll_false);
+    expect_function_call(nopoll_conn_is_ok);
+    will_return(nopoll_conn_is_ok, nopoll_false);
+    expect_function_call(nopoll_conn_is_ok);
+    
     expect_value(nopoll_conn_tls_new, (intptr_t)ctx, (intptr_t)ctx);
     expect_string(nopoll_conn_tls_new, (intptr_t)host_ip, HOST_IP);
     will_return(nopoll_conn_tls_new, (intptr_t)NULL);
@@ -347,6 +356,11 @@ void test_createConnectionConnNull()
     expect_string(nopoll_conn_tls_new6, (intptr_t)host_ip, HOST_IP);
     will_return(nopoll_conn_tls_new6, NULL);
     expect_function_call(nopoll_conn_tls_new6);
+    
+    will_return(nopoll_conn_is_ok, nopoll_false);
+    expect_function_call(nopoll_conn_is_ok);
+    will_return(nopoll_conn_is_ok, nopoll_false);
+    expect_function_call(nopoll_conn_is_ok);
     
 
     expect_value(nopoll_conn_tls_new, (intptr_t)ctx, (intptr_t)ctx);
@@ -372,6 +386,11 @@ void test_createConnectionConnNull()
     expect_string(nopoll_conn_tls_new6, (intptr_t)host_ip, HOST_IP);
     will_return(nopoll_conn_tls_new6, NULL);
     expect_function_call(nopoll_conn_tls_new6);
+    
+    will_return(nopoll_conn_is_ok, nopoll_false);
+    expect_function_call(nopoll_conn_is_ok);
+    will_return(nopoll_conn_is_ok, nopoll_false);
+    expect_function_call(nopoll_conn_is_ok);
     
     expect_value(nopoll_conn_tls_new, (intptr_t)ctx, (intptr_t)ctx);
     expect_string(nopoll_conn_tls_new, (intptr_t)host_ip, HOST_IP);
@@ -547,6 +566,95 @@ void test_createConnectionConnRedirect()
     nopoll_ctx_unref (ctx);
 }
 
+void test_createIPv4Connection()
+{
+    noPollConn *gNPConn;
+    noPollCtx *ctx = nopoll_ctx_new();
+    ParodusCfg *cfg = (ParodusCfg*)malloc(sizeof(ParodusCfg));
+    memset(cfg, 0, sizeof(ParodusCfg));
+
+    mock_strncmp = false;
+    cfg->flags = 2;
+#ifdef FEATURE_DNS_QUERY
+	cfg->acquire_jwt = 1;
+#endif
+    parStrncpy(cfg->webpa_url , SECURE_WEBPA_URL, sizeof(cfg->webpa_url));
+    set_parodus_cfg(cfg);
+
+    assert_non_null(ctx);
+
+#ifdef FEATURE_DNS_QUERY
+	will_return (allow_insecure_conn, 0);
+	expect_function_call (allow_insecure_conn);
+#endif
+
+    will_return(getWebpaConveyHeader, (intptr_t)"WebPA-1.6 (TG1682)");
+    expect_function_call(getWebpaConveyHeader);
+    
+	expect_value(nopoll_conn_tls_new, (intptr_t)ctx, (intptr_t)ctx);
+    expect_string(nopoll_conn_tls_new, (intptr_t)host_ip, HOST_IP);
+    will_return(nopoll_conn_tls_new, (intptr_t)&gNPConn);
+    expect_function_call(nopoll_conn_tls_new);
+
+    will_return(nopoll_conn_is_ok, nopoll_true);
+    expect_function_call(nopoll_conn_is_ok);
+
+    will_return(nopoll_conn_wait_until_connection_ready, nopoll_true);
+    expect_function_call(nopoll_conn_wait_until_connection_ready);
+
+    expect_function_call(setMessageHandlers);
+
+    int ret = createNopollConnection(ctx);
+    assert_int_equal(ret, nopoll_true);
+    free(cfg);
+    nopoll_ctx_unref (ctx);
+}
+
+void test_createIPv6Connection()
+{
+    noPollConn *gNPConn;
+    noPollCtx *ctx = nopoll_ctx_new();
+    ParodusCfg *cfg = (ParodusCfg*)malloc(sizeof(ParodusCfg));
+    memset(cfg, 0, sizeof(ParodusCfg));
+    
+    mock_strncmp = false;
+    cfg->flags = 1;
+#ifdef FEATURE_DNS_QUERY
+	cfg->acquire_jwt = 1;
+#endif
+    parStrncpy(cfg->webpa_url , SECURE_WEBPA_URL, sizeof(cfg->webpa_url));
+    set_parodus_cfg(cfg);
+
+    assert_non_null(ctx);
+
+#ifdef FEATURE_DNS_QUERY
+	will_return (allow_insecure_conn, 0);
+	expect_function_call (allow_insecure_conn);
+#endif
+
+    will_return(getWebpaConveyHeader, (intptr_t)"WebPA-1.6 (TG1682)");
+    expect_function_call(getWebpaConveyHeader);
+    
+	expect_value(nopoll_conn_tls_new6, (intptr_t)ctx, (intptr_t)ctx);
+    expect_string(nopoll_conn_tls_new6, (intptr_t)host_ip, HOST_IP);
+    
+    will_return(nopoll_conn_tls_new6, (intptr_t)&gNPConn);
+    expect_function_call(nopoll_conn_tls_new6);
+
+    will_return(nopoll_conn_is_ok, nopoll_true);
+    expect_function_call(nopoll_conn_is_ok);
+
+    will_return(nopoll_conn_wait_until_connection_ready, nopoll_true);
+    expect_function_call(nopoll_conn_wait_until_connection_ready);
+
+    expect_function_call(setMessageHandlers);
+
+    int ret = createNopollConnection(ctx);
+    assert_int_equal(ret, nopoll_true);
+    free(cfg);
+    nopoll_ctx_unref (ctx);
+}
+
 void err_createConnectionCtxNull()
 {
     noPollCtx *ctx = NULL;
@@ -579,6 +687,8 @@ int main(void)
         cmocka_unit_test(test_createConnectionConnNotOk),
         cmocka_unit_test(test_createConnectionConnRedirect),
         cmocka_unit_test(err_createConnectionCtxNull),
+        cmocka_unit_test(test_createIPv4Connection),
+        cmocka_unit_test(test_createIPv6Connection),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
