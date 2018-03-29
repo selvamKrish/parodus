@@ -55,7 +55,7 @@ void listenerOnMessage_queue(noPollCtx * ctx, noPollConn * conn, noPollMsg * msg
     UNUSED(ctx);
     UNUSED(conn);
     UNUSED(user_data);
-	noPollMsg  * aux;
+    noPollMsg  * aux;
 	
 	if (nopoll_msg_is_fragment (msg)) 
 	{
@@ -111,7 +111,8 @@ void listenerOnMessage_queue(noPollCtx * ctx, noPollConn * conn, noPollMsg * msg
         //Memory allocation failed
         ParodusError("Memory allocation is failed\n");
     }
-    previous_msg = NULL;
+	nopoll_msg_unref(previous_msg);
+	previous_msg = NULL;
     ParodusPrint("*****Returned from listenerOnMessage_queue*****\n");
 }
 
