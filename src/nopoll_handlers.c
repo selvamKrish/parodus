@@ -69,7 +69,6 @@ void listenerOnMessage_queue(noPollCtx * ctx, noPollConn * conn, noPollMsg * msg
 			return;
 		} 
 		ParodusInfo("Found final fragment *** \n");
-		msg = previous_msg; 
 	}
 
     ParodusMsg *message;
@@ -77,12 +76,23 @@ void listenerOnMessage_queue(noPollCtx * ctx, noPollConn * conn, noPollMsg * msg
 
     if(message)
     {
-        message->msg = msg;
-        message->payload = (void *)nopoll_msg_get_payload (msg);
-        message->len = nopoll_msg_get_payload_size (msg);
-        message->next = NULL;
+        if(previous_msg)
+        {
+        	message->msg = previous_msg;
+		    message->payload = (void *)nopoll_msg_get_payload (previous_msg);
+		    message->len = nopoll_msg_get_payload_size (previous_msg);
+		    message->next = NULL;
+		    nopoll_msg_ref(previous_msg);
+        }
+        else
+        {        
+			message->msg = msg;
+			message->payload = (void *)nopoll_msg_get_payload (msg);
+			message->len = nopoll_msg_get_payload_size (msg);
+			message->next = NULL;
 
-        nopoll_msg_ref(msg);
+			nopoll_msg_ref(msg);
+		}
 
         pthread_mutex_lock (&g_mutex);		
         ParodusPrint("mutex lock in producer thread\n");
