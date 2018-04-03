@@ -82,7 +82,8 @@ void listenerOnMessage_queue(noPollCtx * ctx, noPollConn * conn, noPollMsg * msg
 		    message->payload = (void *)nopoll_msg_get_payload (previous_msg);
 		    message->len = nopoll_msg_get_payload_size (previous_msg);
 		    message->next = NULL;
-		    nopoll_msg_ref(previous_msg);
+//Not required
+//		    nopoll_msg_ref(previous_msg);
         }
         else
         {        
@@ -121,7 +122,8 @@ void listenerOnMessage_queue(noPollCtx * ctx, noPollConn * conn, noPollMsg * msg
         //Memory allocation failed
         ParodusError("Memory allocation is failed\n");
     }
-	nopoll_msg_unref(previous_msg);
+	// Not required
+	//nopoll_msg_unref(previous_msg);
 	previous_msg = NULL;
     ParodusPrint("*****Returned from listenerOnMessage_queue*****\n");
 }
