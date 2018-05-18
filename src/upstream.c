@@ -352,8 +352,7 @@ void *processUpstreamMessage()
                         sendUpstreamMsgToServer(&message->msg, message->len);
                     }
 		    //PartnerId validation is not required for local messages
-                    //sendToAllRegisteredClients(&message->msg, message->len);
-                    filter_clients_and_send(msg);
+                    sendToAllRegisteredClients(&message->msg, message->len);
                     add_P2P_OutgoingMessage(&message->msg, message->len);
                 }
                 else
@@ -463,33 +462,20 @@ void *processUpstreamMessage()
     return NULL;
 }
 
-/* ToDo: Pick clients based on an requirement */
+
 void sendToAllRegisteredClients(void **resp_bytes, size_t resp_size)
 {
-	void *appendData;
-	size_t encodedSize;
-
-	//appending response with metadata
-	if(metaPackSize > 0)
-	{
-        reg_list_item_t *temp;
-        encodedSize = appendEncodedData( &appendData, *resp_bytes, resp_size, metadataPack, metaPackSize );
-
-	    temp = get_global_node();
-        while(NULL != temp)
-        {
-              int  bytes = nn_send (temp->sock, appendData, encodedSize, 0);
-              ParodusInfo("sendToAllRegisteredClients() sent %d bytes to url: %s service: %s\n",
-                      bytes, temp->url, temp->service_name);
-              temp = temp->next;
-        }
-		free(appendData);
+    int rv=-1;
+    wrp_msg_t *msg = NULL;
+    ParodusPrint("----------- %s --------------\n",__FUNCTION__);
+    rv = wrp_to_struct( *resp_bytes, resp_size, WRP_BYTES, &msg );
+    if(rv > 0)
+    {
+        ParodusInfo("B4 filter_clients_and_send()\n");
+        filter_clients_and_send(msg);
+        wrp_free_struct(msg);
+        msg = NULL;
     }
-	else
-	{
-		ParodusError("Failed to send upstream as metadata packing is not successful\n");
-	}
-
 }
 
 
