@@ -179,6 +179,12 @@ bool add_Client_Subscription(char *service_name, char *regex)
 void init_subscription_list()
 {
 }
+
+bool delete_client_subscriptions(char *service_name)
+{
+    UNUSED(service_name);
+    return true;
+}
 /*----------------------------------------------------------------------------*/
 /*                                   Tests                                    */
 /*----------------------------------------------------------------------------*/

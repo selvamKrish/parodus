@@ -88,7 +88,6 @@ void filter_clients_and_send(wrp_msg_t *wrp_event_msg)
 {
     rebar_ll_node_t *node = NULL;
     Subscription *sub = NULL;
-    char *token;
     char *tempStr;
     void *bytes;
 
@@ -103,18 +102,11 @@ void filter_clients_and_send(wrp_msg_t *wrp_event_msg)
             if(wrp_event_msg->u.event.dest != NULL)
             {
                 tempStr = strdup(wrp_event_msg->u.event.dest);
-                tempStr = strtok(tempStr, "/");
-                token = strtok(tempStr, ":");
-                if(token != NULL)
+                if(strstr(tempStr, sub->regex) != NULL)
                 {
-                    token = strtok(NULL, ":");
-                    ParodusPrint("token is %s\n",token);
-                    if(strstr(sub->regex, token) != NULL)
-                    {
-                        ParodusInfo("%s registered for this event\n",sub->service_name);
-                        int size = wrp_struct_to( wrp_event_msg, WRP_BYTES, &bytes );
-                        sendMsgtoRegisteredClients(sub->service_name, (const char **)&bytes, size);
-                    }
+                    ParodusInfo("%s registered for this event\n",sub->service_name);
+                    int size = wrp_struct_to( wrp_event_msg, WRP_BYTES, &bytes );
+                    sendMsgtoRegisteredClients(sub->service_name, (const char **)&bytes, size);
                 }
                 free(tempStr);
             }
@@ -127,6 +119,7 @@ bool delete_client_subscriptions(char *service_name)
 {
     rebar_ll_node_t *node = NULL;
     Subscription *sub = NULL;
+    bool match_found = false;
     ParodusPrint("****** %s *******\n",__FUNCTION__);
     node = rebar_ll_get_first( g_sub_list );
     while( NULL != node ) 
@@ -136,8 +129,9 @@ bool delete_client_subscriptions(char *service_name)
         if(strcmp(sub->service_name, service_name) == 0)
         {
             rebar_ll_remove( g_sub_list, node );
+            match_found = true;
         }
         node = node->next;
     }
-    return true;
+    return match_found;
 }

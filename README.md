@@ -98,7 +98,7 @@ sudo ./src/parodus --hw-model=TGXXX --hw-serial-number=E8GBUEXXXXXXXXX --hw-manu
 
 2. Printer component connecting to Hub
 ```
-./tests/printer -p tcp://127.0.0.1:6666 -c tcp://127.0.0.1:9001 -t 10000
+./tests/printer -p tcp://127.0.0.1:6666 -c tcp://127.0.0.1:9001 -t 10000 -n printer
 ```
 
 3. Spoke1 parodus
@@ -106,9 +106,9 @@ sudo ./src/parodus --hw-model=TGXXX --hw-serial-number=E8GBUEXXXXXXXXX --hw-manu
 sudo ./src/parodus --hw-model=TGXXX --hw-serial-number=E8GBUEXXXXXXXXX --hw-manufacturer=ARRIS --hw-mac=888888888888 --hw-last-reboot-reason=unknown --fw-name=TG1682_DEV_master_20170512115046sdy --boot-time=1494590301 --webpa-ping-timeout=180 --webpa-interface-used=enp1s0 --webpa-backoff-max=9 --parodus-local-url=tcp://127.0.0.1:8888 --partner-id=comcast --ssl-cert-path=/etc/ssl/certs/ca-bundle.crt --webpa-url=https://fabric.webpa.comcast.net:8080 --force-ipv4 --hub-or-spoke=spk
 ```
 
-4. Printer1 component connecting to Spoke
+4. Printer1 component connecting to Spoke1
 ```
-./tests/printer -p tcp://127.0.0.1:8888 -c tcp://127.0.0.1:8001 -t 10000
+./tests/printer -p tcp://127.0.0.1:8888 -c tcp://127.0.0.1:8001 -t 10000 -n printer1
 ```
 
 5. Spoke2 parodus
@@ -116,9 +116,9 @@ sudo ./src/parodus --hw-model=TGXXX --hw-serial-number=E8GBUEXXXXXXXXX --hw-manu
 sudo ./src/parodus --hw-model=TGXXX --hw-serial-number=E8GBUEXXXXXXXXX --hw-manufacturer=ARRIS --hw-mac=999999999999 --hw-last-reboot-reason=unknown --fw-name=TG1682_DEV_master_20170512115046sdy --boot-time=1494590301 --webpa-ping-timeout=180 --webpa-interface-used=enp1s0 --webpa-backoff-max=9 --parodus-local-url=tcp://127.0.0.1:9999 --partner-id=comcast --ssl-cert-path=/etc/ssl/certs/ca-bundle.crt --webpa-url=https://fabric.webpa.comcast.net:8080 --force-ipv4 --hub-or-spoke=spk
 ```
 
-6. Printer2 component connecting to Spoke
+6. Printer2 component connecting to Spoke2 without event subscription
 ```
-./tests/printer -p tcp://127.0.0.1:9999 -c tcp://127.0.0.1:9002 -t 10000
+./tests/printer -p tcp://127.0.0.1:9999 -c tcp://127.0.0.1:9002 -t 10000 -n printer2 --un-subscribe
 ```
 
 7. Producer connecting to Hub

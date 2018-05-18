@@ -49,7 +49,7 @@ static char *mac_address;
 
 int main( int argc, char **argv)
 {
-    const char *option_string = "p:c:w:d:f:m:t:h:n:s:u::";
+    const char *option_string = "p:c:w:d:f:m:t:h:n:u::";
     static const struct option options[] = {
         { "help",         optional_argument, 0, 'h' },
         { "parodus-url",  required_argument, 0, 'p' },
@@ -57,7 +57,6 @@ int main( int argc, char **argv)
         { "mac-address",  optional_argument, 0, 'm'},
         { "wait-time",    required_argument, 0, 't'},
         { "service-name", required_argument, 0, 'n'},
-        { "subscribe",    no_argument,       0, 's'},
         { "un-subscribe", no_argument,       0, 'u'},
         { 0, 0, 0, 0 }
     };
@@ -72,7 +71,7 @@ int main( int argc, char **argv)
     int item = 0;
     int opt_index = 0;
     int rv = 0;
-    bool isSubscribed = false;
+    bool isSubscribed = true;
 
     signal(SIGTERM, sig_handler);
     signal(SIGINT, sig_handler);
@@ -139,10 +138,15 @@ int main( int argc, char **argv)
 
     if( (rv == 0) &&
         (NULL != cfg.parodus_url) &&
-        (NULL != cfg.client_url) && (NULL != cfg.service_name))
+        (NULL != cfg.client_url))
     { 
 	    if (NULL == mac_address) {
                 mac_address = strdup("14cfe1234567");
+	    }
+
+	    if(NULL == cfg.service_name)
+	    {
+	        cfg.service_name = strdup(SERVICE_NAME);
 	    }
         main_loop(&cfg, isSubscribed);
         rv = 0;
@@ -155,10 +159,6 @@ int main( int argc, char **argv)
             debug_error("%s client_url not specified !\n", argv[0]);
             rv = -2;
         }
-        if((NULL == cfg.service_name)) {
-            debug_error("%s service_name not specified !\n", argv[0]);
-            rv = -3;
-        }       
      }
     
     if (rv != 0) {
