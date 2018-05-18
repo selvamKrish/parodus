@@ -127,6 +127,7 @@ bool delete_client_subscriptions(char *service_name)
 {
     rebar_ll_node_t *node = NULL;
     Subscription *sub = NULL;
+    bool match_found = false;
     ParodusPrint("****** %s *******\n",__FUNCTION__);
     node = rebar_ll_get_first( g_sub_list );
     while( NULL != node ) 
@@ -136,8 +137,9 @@ bool delete_client_subscriptions(char *service_name)
         if(strcmp(sub->service_name, service_name) == 0)
         {
             rebar_ll_remove( g_sub_list, node );
+            match_found = true;
         }
         node = node->next;
     }
-    return true;
+    return match_found;
 }

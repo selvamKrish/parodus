@@ -8,6 +8,35 @@
 #include "upstream.h"
 #include "subscription.h"
 
+/* To get service_name from CRUD destination field. 
+	Ex: To get service_name "printer" from destination "mac:111111111111/parodus/subscribe/printer" */
+char *get_service_name_from_destination(char *destination)
+{
+    char *token, *temStr;
+    char * service_name = NULL;
+    if(destination != NULL)
+    {
+        if(NULL != strtok(destination , "/"))
+        {
+            temStr = strtok(NULL , "");
+            if(temStr != NULL)
+            {
+                token = strtok(temStr , "/");
+                while(token != NULL)
+                {
+                    token = strtok(NULL, "/");
+                    if(0 == strcmp(token, "subscribe"))
+                    {
+                        service_name = strtok(NULL, "/");
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return service_name;
+}
+
 int processCrudRequest( wrp_msg_t *reqMsg, wrp_msg_t **responseMsg)
 {
     wrp_msg_t *resp_msg = NULL;
@@ -170,11 +199,32 @@ int processCrudRequest( wrp_msg_t *reqMsg, wrp_msg_t **responseMsg)
 	case WRP_MSG_TYPE__DELETE:
 	    ParodusInfo( "DELETE request\n" );
 	    
-	    ret = deleteObject(reqMsg, &resp_msg );
-	    
+	    if(reqMsg->u.crud.dest !=NULL && strstr(reqMsg->u.crud.dest, "subscribe") != NULL)
+		{
+			destVal = strdup(reqMsg->u.crud.dest);
+		    service_name = get_service_name_from_destination(destVal);
+            if(service_name != NULL)
+            {
+                ParodusPrint("service_name %s\n",service_name);
+                if(true == delete_client_subscriptions(service_name))
+                {
+                    ParodusInfo("%s service deleted successfully\n",service_name);
+                    resp_msg ->u.crud.status = 200;
+                }
+                else
+                {
+                    ParodusInfo("Failed to delete %s service\n",service_name);
+                    resp_msg ->u.crud.status = 400;
+                }
+            }
+        }
+        else
+        {
+	        ret = deleteObject(reqMsg, &resp_msg );
+	    }
 	    //WRP payload is NULL for delete requests
-	    resp_msg ->u.crud.payload = NULL;
-	    resp_msg ->u.crud.payload_size = 0;
+        resp_msg ->u.crud.payload = NULL;
+        resp_msg ->u.crud.payload_size = 0;
 	    *responseMsg = resp_msg;
 	      
 	    break;
