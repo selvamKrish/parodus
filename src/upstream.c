@@ -35,6 +35,7 @@
 /*                                   Macros                                   */
 /*----------------------------------------------------------------------------*/
 #define METADATA_COUNT 					12
+#define SUBSCRIBE_FORMAT				"parodus/subscribe"
 
 /*----------------------------------------------------------------------------*/
 /*                            File Scoped Variables                           */
@@ -217,6 +218,18 @@ int sendMsgtoRegisteredClients(char *dest,const char **Msg,size_t msgSize)
 	return 0;
 }
 
+/*
+	Internal function to parse wrp src/dest
+*/
+static char *get_src_dest_from_sub_req(char *upstreamDest)
+{
+	char * endValue = NULL;
+	strtok(upstreamDest , "/");
+	endValue = strtok(NULL , "");
+	return endValue;
+}
+
+
 void *processUpstreamMessage()
 {		
     int rv=-1, rc = -1;	
@@ -227,9 +240,11 @@ void *processUpstreamMessage()
     int matchFlag = 0;
     int status = -1;
     char *destVal = NULL;
-    char *eventDest= NULL;
     char *upstreamDest = NULL;
-    char *endValue = NULL;
+    char *upstreamSrc = NULL;
+    char *serviceName = NULL;
+    char *subsSource = NULL;
+    char *crudDest = NULL;
     
 
     while(FOREVER())
@@ -357,76 +372,76 @@ void *processUpstreamMessage()
                 }
                 else
                 {
-                    //Sending to server for msgTypes 3, 5, 6, 7, 8.
-                    if( WRP_MSG_TYPE__REQ == msgType ) 
-                    {
-                        ParodusInfo(" Received upstream data with MsgType: %d dest: '%s' transaction_uuid: %s\n", 
-                                      msgType, msg->u.req.dest, msg->u.req.transaction_uuid );
-                    } 
-                    else 
-                    {
-                    	ParodusInfo(" Received upstream data with MsgType: %d dest: '%s' transaction_uuid: %s status: %d\n",msgType, msg->u.crud.dest, msg->u.crud.transaction_uuid, msg->u.crud.status );
-        		if(WRP_MSG_TYPE__CREATE == msgType && msg->u.crud.dest !=NULL)
-        		{
-        			//Expecting dest format as mac:xxxxxxxxxxxx/parodus/subscribe
-        			//Strip dest field to get "parodus/subscribe"
-        			destVal = strdup(msg->u.crud.dest);
-        			strtok(destVal , "/");
-        			eventDest = strtok(NULL , "");
-        			if(eventDest != NULL)
-        			{
-			            	if ( strcmp(eventDest,"parodus/subscribe")== 0) 
-			            	{
-						//if needed, add your required wrp CREATE fields to the struct 
-						create_msg = ( wrp_msg_t *)malloc( sizeof( wrp_msg_t ) );  
-						memset(create_msg, 0, sizeof(wrp_msg_t));
-						create_msg->msg_type = msg->msg_type;
-						create_msg->u.crud.transaction_uuid = strdup(msg->u.crud.transaction_uuid);
-						create_msg->u.crud.source = strdup(msg->u.crud.source);
-						create_msg->u.crud.dest = strdup(msg->u.crud.dest);
-						create_msg->u.crud.payload =  strdup(msg->u.crud.payload);
-						create_msg->u.crud.payload_size = msg->u.crud.payload_size;
-						addCRUDmsgToQueue(create_msg);
-						//TODO Don't free here, find correct place to free. 
-						//free(create_msg);
+					//Sending to server for msgTypes 3, 5, 6, 7, 8.
+					if( WRP_MSG_TYPE__REQ == msgType )
+					{
+						ParodusInfo(" Received upstream data with MsgType: %d dest: '%s' transaction_uuid: %s\n",
+					msgType, msg->u.req.dest, msg->u.req.transaction_uuid );
 					}
-        			}
-        			
-				free(destVal);
-				destVal = NULL;
-            		}
-						
-                    }
-                    
-                    if(WRP_MSG_TYPE__CREATE == msgType && msg->u.crud.dest !=NULL)
-                    {
-    			//Expecting dest format as mac:xxxxxxxxxxxx/printer
-    			//Strip dest field to get "printer"
-    			upstreamDest = strdup(msg->u.crud.dest);
-    			strtok(upstreamDest , "/");
-    			endValue = strtok(NULL , "");
-    			if(endValue != NULL)
-    			{
-    				//Hardcoded destination
-    				if ( strcmp(endValue,"printer")== 0) 
-		            	{
-					//Send Client Subscribe response back to registered client
-					sendMsgtoRegisteredClients(endValue,(const char **)&message->msg,message->len);
-				}
-				
-    			}
-    			else
-			{
-				sendUpstreamMsgToServer(&message->msg, message->len);   
-			}
-			free(upstreamDest);
-			upstreamDest = NULL;
+					else
+					{
+						ParodusInfo(" Received upstream data with MsgType: %d dest: '%s' transaction_uuid: %s status: %d\n",msgType, msg->u.crud.dest, msg->u.crud.transaction_uuid, msg->u.crud.status );
+						if(WRP_MSG_TYPE__CREATE == msgType && msg->u.crud.dest !=NULL && msg->u.crud.source != NULL)
+						{
+							destVal = strdup(msg->u.crud.dest);
+							upstreamDest = get_src_dest_from_sub_req(destVal);
+							upstreamSrc = strdup(msg->u.crud.source);
+							subsSource = get_src_dest_from_sub_req(upstreamSrc);
 
-                    }
-                    else
-                    {
-	                sendUpstreamMsgToServer(&message->msg, message->len);                    	
-                    }
+							/* Handle Subscribe create request here
+								Expecting dest format as mac:xxxxxxxxxxxx/parodus/subscribe
+								Strip dest field to get "parodus/subscribe"
+							*/
+							if(upstreamDest != NULL && strcmp(upstreamDest,SUBSCRIBE_FORMAT)== 0)
+							{
+								//if needed, add your required wrp CREATE fields to the struct
+								create_msg = ( wrp_msg_t *)malloc( sizeof( wrp_msg_t ) );
+								memset(create_msg, 0, sizeof(wrp_msg_t));
+								create_msg->msg_type = msg->msg_type;
+								create_msg->u.crud.transaction_uuid = strdup(msg->u.crud.transaction_uuid);
+								create_msg->u.crud.source = strdup(msg->u.crud.source);
+								create_msg->u.crud.dest = strdup(msg->u.crud.dest);
+								create_msg->u.crud.payload =  strdup(msg->u.crud.payload);
+								create_msg->u.crud.payload_size = msg->u.crud.payload_size;
+								addCRUDmsgToQueue(create_msg);
+								//TODO Don't free here, find correct place to free.
+								//free(create_msg);
+							}
+							else if(subsSource != NULL && strcmp(subsSource,SUBSCRIBE_FORMAT)==0)
+							{
+								/* Handle Subscribe create response here to send it to registered client
+									Expecting src format as mac:xxxxxxxxxxxx/parodus/subscribe
+									Strip src field to get "parodus/subscribe"
+								*/
+								crudDest = strdup(msg->u.crud.dest);
+								serviceName = get_src_dest_from_sub_req(crudDest);
+								if ( serviceName != NULL)
+								{
+									//Send Client Subscribe response back to registered client
+									ParodusInfo("Send Client Subscribe response back to %s\n",serviceName);
+									sendMsgtoRegisteredClients(serviceName,(const char **)&message->msg,message->len);
+								}
+								else
+								{
+									ParodusError("serviceName is NULL,not sending subscribe response to client\n");
+								}
+								free(crudDest);
+								crudDest = NULL;
+							}
+							else
+							{
+								sendUpstreamMsgToServer(&message->msg, message->len);
+							}
+							free(upstreamSrc);
+							upstreamSrc = NULL;
+							free(destVal);
+							destVal = NULL;
+						}
+						else
+						{
+							sendUpstreamMsgToServer(&message->msg, message->len);
+						}
+					}
                 }
             }
             else

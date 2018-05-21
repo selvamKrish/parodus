@@ -162,6 +162,8 @@ int processCrudRequest( wrp_msg_t *reqMsg, wrp_msg_t **responseMsg)
                     resp_msg ->u.crud.status = 400;
                 }
             }
+            free(destVal);
+            destVal = NULL;
         }
         else
         {
