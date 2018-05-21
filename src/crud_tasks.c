@@ -146,7 +146,6 @@ int processCrudRequest( wrp_msg_t *reqMsg, wrp_msg_t **responseMsg)
 	    
 	    if(reqMsg->u.crud.dest !=NULL && strstr(reqMsg->u.crud.dest, "subscribe") != NULL)
 		{
-			char *service_name = NULL;
 			destVal = strdup(reqMsg->u.crud.dest);
 		    service_name = get_service_name_from_destination(destVal);
             if(service_name != NULL)
@@ -163,6 +162,8 @@ int processCrudRequest( wrp_msg_t *reqMsg, wrp_msg_t **responseMsg)
                     resp_msg ->u.crud.status = 400;
                 }
             }
+            free(destVal);
+            destVal = NULL;
         }
         else
         {
