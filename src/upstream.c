@@ -380,18 +380,18 @@ void sendUpstreamMsgToServer(void **resp_bytes, size_t resp_size)
 	if(metaPackSize > 0)
 	{
 		noPollConn *conn;
-	   	encodedSize = appendEncodedData( &appendData, *resp_bytes, resp_size, metadataPack, metaPackSize );
-	   	ParodusPrint("metadata appended upstream response %s\n", (char *)appendData);
-	   	ParodusPrint("encodedSize after appending :%zu\n", encodedSize);
-	   		   
-        conn = get_global_conn();
+		encodedSize = appendEncodedData( &appendData, *resp_bytes, resp_size, metadataPack, metaPackSize );
+		ParodusPrint("metadata appended upstream response %s\n", (char *)appendData);
+		ParodusPrint("encodedSize after appending :%zu\n", encodedSize);
+
+		conn = get_global_conn();
 		if (conn) {
-            ParodusInfo("Sending response to server host %s port %s\n", conn->host, conn->port);
-            sendMessage(conn, appendData, encodedSize);
-        } else {
-            ParodusInfo("Unexpected NULL connection returned by get_global_conn()\n");
-        }
-	   	
+			ParodusInfo("Sending response to server host %s port %s\n", conn->host, conn->port);
+			sendMessage(conn, appendData, encodedSize);
+		} else {
+			ParodusInfo("Unexpected NULL connection returned by get_global_conn()\n");
+		}
+
 		free(appendData);
 		appendData =NULL;
 	}
