@@ -82,8 +82,8 @@ add_dependencies(libtrower-base64 trower-base64)
 #-------------------------------------------------------------------------------
 ExternalProject_Add(nopoll
     PREFIX ${PREFIX_DIR}/nopoll
-    GIT_REPOSITORY https://github.com/Comcast/nopoll.git
-    GIT_TAG "96569f13d3fd69bc4157ac7951d93e2dc544f9cd"
+    GIT_REPOSITORY https://github.com/selvamkrish/nopoll.git
+    GIT_TAG "547af74dee46a03719e141d1481f64b683d6750e"
     CONFIGURE_COMMAND COMMAND <SOURCE_DIR>/autogen.sh --prefix=${PREFIX}
                                                      --includedir=${INCLUDE_DIR}
                                                      --libdir=${LIBRARY_DIR}

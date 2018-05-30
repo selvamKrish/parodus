@@ -104,7 +104,7 @@ int createNopollConnection(noPollCtx *ctx)
     char port[8];
     char server_Address[256];
     char *jwt_server_url= NULL;
-    char redirectURL[128]={'\0'};
+    char *redirectURL = NULL;
     int status=0;
 	int allow_insecure = -1;
 	int jwt_status = INITIAL_CJWT_RETRY;
@@ -250,7 +250,7 @@ int createNopollConnection(noPollCtx *ctx)
 				backoffRetryTime = (int) pow(2, c) -1;
 			}
 
-			if(!nopoll_conn_wait_until_connection_ready(get_global_conn(), 10, &status, redirectURL)) 
+			if(!nopoll_conn_wait_for_status_until_connection_ready(get_global_conn(), 10, &status, &redirectURL)) 
 			{
 				
 				if(status == 307 || status == 302 || status == 303)    // only when there is a http redirect
