@@ -136,6 +136,7 @@ void listenerOnPingMessage (noPollCtx * ctx, noPollConn * conn, noPollMsg * msg,
 {
     UNUSED(ctx);
     UNUSED(user_data);
+    UNUSED(conn);
 
     noPollPtr payload = NULL;
     payload = (noPollPtr ) nopoll_msg_get_payload(msg);
@@ -145,9 +146,7 @@ void listenerOnPingMessage (noPollCtx * ctx, noPollConn * conn, noPollMsg * msg,
         ParodusInfo("Ping received with payload %s, opcode %d\n",(char *)payload, nopoll_msg_opcode(msg));
         if (nopoll_msg_opcode(msg) == NOPOLL_PING_FRAME) 
         {
-            nopoll_conn_send_frame (conn, nopoll_true, nopoll_true, NOPOLL_PONG_FRAME, strlen(payload), payload, 0);
             heartBeatTimer = 0;
-            ParodusPrint("Sent Pong frame and reset HeartBeat Timer\n");
         }
     }
 }
