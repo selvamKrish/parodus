@@ -46,7 +46,7 @@ CrudMsg *crudMsgQ = NULL;
 
 void addCRUDmsgToQueue(wrp_msg_t *crudMsg)
 {
-	CrudMsg * crudMessage;
+	CrudMsg * crudMessage = NULL;
 	crudMessage = (CrudMsg *)malloc(sizeof(CrudMsg));
 	if(crudMessage && crudMsg!=NULL)
 	{
@@ -84,7 +84,7 @@ void *CRUDHandlerTask()
 {
 	int ret = 0;
 	ssize_t resp_size = 0;
-	void *resp_bytes;
+	void *resp_bytes = NULL;
 	wrp_msg_t *crud_response = NULL;
 
 	while(FOREVER())

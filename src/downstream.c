@@ -101,8 +101,22 @@ void listenerOnMessage(void * msg, size_t msgSize)
                               
                     if( (destVal != NULL) && (ret >= 0) )
                     {
-                        strtok(destVal , "/");
-                        parStrncpy(dest,strtok(NULL , "/"), sizeof(dest));
+                        char *newDest = NULL;
+                        char *parseDest = strtok(destVal , "/");
+                        if(parseDest != NULL)
+                        {
+                            newDest = strtok(NULL , "/");
+                        }
+                        /*Check dest format ex:  mac:14cfe2142143/config or mac:14cfe2142143/parodus/tag/test1 */
+                        if(newDest != NULL)
+                        {
+                            parStrncpy(dest,newDest, sizeof(dest));
+                        }
+                        else
+                        {
+                            //handle wrong dest format ex: mac:14cfe2142143
+                            parStrncpy(dest,destVal, sizeof(dest));
+                        }
                         ParodusInfo("Received downstream dest as :%s and transaction_uuid :%s\n", dest, 
                             ((WRP_MSG_TYPE__REQ   == msgType) ? message->u.req.transaction_uuid : 
                             ((WRP_MSG_TYPE__EVENT == msgType) ? "NA" : message->u.crud.transaction_uuid)));
@@ -115,7 +129,7 @@ void listenerOnMessage(void * msg, size_t msgSize)
                         {
                             ParodusPrint("node is pointing to temp->service_name %s \n",temp->service_name);
                             // Sending message to registered clients
-                            if( strcmp(dest, temp->service_name) == 0)
+                            if( dest != NULL && temp->service_name != NULL && strcmp(dest, temp->service_name) == 0)
                             {
                                 ParodusPrint("sending to nanomsg client %s\n", dest);
                                 bytes = nn_send(temp->sock, recivedMsg, msgSize, 0);
@@ -129,7 +143,7 @@ void listenerOnMessage(void * msg, size_t msgSize)
                         }
 
 						/* check Downstream dest for CRUD requests */
-						if(destFlag ==0 && strcmp("parodus", dest)==0)
+						if(destFlag ==0 && dest != NULL && strcmp("parodus", dest)==0)
 						{
 							ParodusPrint("Received CRUD request : dest : %s\n", dest);
 							addCRUDmsgToQueue(message);

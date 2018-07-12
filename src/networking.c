@@ -80,7 +80,7 @@ int checkHostIp(char * serverIP)
 			inet_ntop (res->ai_family, ptr, addrstr, 100);
 		
 			ParodusPrint("IPv4 address of %s is %s \n", serverIP, addrstr);
-			if (strcmp(localIp,addrstr) == 0)
+			if (localIp != NULL && addrstr != NULL &&strcmp(localIp,addrstr) == 0)
 			{
 				ParodusPrint("Host Ip resolved to 10.0.0.1\n");
 				status = -2;

@@ -77,14 +77,18 @@ void createSocketConnection(void (* initKeypress)())
     ctx = nopoll_ctx_new();
     if (!ctx) 
     {
-        ParodusError("\nError creating nopoll context\n");
+        ParodusError("\nError creating nopoll context, abort the process\n");
+        return;
     }
 
     #ifdef NOPOLL_LOGGER
     nopoll_log_set_handler (ctx, __report_log, NULL);
     #endif
 
-    createNopollConnection(ctx);
+    if(!createNopollConnection(ctx))
+    {
+        return;
+    }
     packMetaData();
     
     UpStreamMsgQ = NULL;

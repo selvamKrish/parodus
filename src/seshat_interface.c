@@ -54,7 +54,8 @@ bool __registerWithSeshat()
     char *parodus_url = get_parodus_cfg()->local_url;
     char *discover_url = NULL;
     bool rv = false;
-
+    if(seshat_url != NULL && strlen(seshat_url) >0 && parodus_url != NULL && strlen(parodus_url) >0 )
+    {
     if( 0 == init_lib_seshat(seshat_url) ) {
         ParodusInfo("seshatlib initialized! (url %s)\n", seshat_url);
 
@@ -77,5 +78,6 @@ bool __registerWithSeshat()
     }
 
     shutdown_seshat_lib();
+    }
     return rv;
 }

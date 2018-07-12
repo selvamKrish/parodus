@@ -55,7 +55,7 @@ void listenerOnMessage_queue(noPollCtx * ctx, noPollConn * conn, noPollMsg * msg
     UNUSED(ctx);
     UNUSED(conn);
     UNUSED(user_data);
-    noPollMsg  * aux;
+    noPollMsg  * aux = NULL;
 
 	if (nopoll_msg_is_fragment (msg))
 	{
@@ -63,6 +63,7 @@ void listenerOnMessage_queue(noPollCtx * ctx, noPollConn * conn, noPollMsg * msg
 		aux          = previous_msg;
 		previous_msg = nopoll_msg_join (previous_msg, msg);
 		nopoll_msg_unref (aux);
+        aux = NULL;
 
 		if (! nopoll_msg_is_final (msg)) {
 			ParodusInfo ("Found fragment that is not final..\n");

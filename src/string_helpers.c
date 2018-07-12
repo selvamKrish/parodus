@@ -39,10 +39,16 @@
 /*----------------------------------------------------------------------------*/
 /*                             External Functions                             */
 /*----------------------------------------------------------------------------*/
-void parStrncpy(char *destStr, const char *srcStr, size_t destSize)
+int parStrncpy(char *destStr, const char *srcStr, size_t destSize)
 {
-    strncpy(destStr, srcStr, destSize-1);
-    destStr[destSize-1] = '\0';
+    if(destStr != NULL && srcStr != NULL && destSize > 0 )
+    {
+        strncpy(destStr, srcStr, destSize-1);
+        destStr[destSize-1] = '\0';
+        return 0;
+    }
+    return -1;
+
 }
 
 /*----------------------------------------------------------------------------*/

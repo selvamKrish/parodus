@@ -48,89 +48,92 @@ int get_numOfClients()
 
 int addToList( wrp_msg_t **msg)
 {   
-    //new_node indicates the new clients which needs to be added to list
-    int rc = -1;
-    int sock;
-    int retStatus = -1;
-    sock = nn_socket( AF_SP, NN_PUSH );
-    ParodusPrint("sock created for adding entries to list: %d\n", sock);
-    if(sock >= 0)
-    {
-            int t = NANOMSG_SOCKET_TIMEOUT_MSEC;
-            rc = nn_setsockopt(sock, NN_SOL_SOCKET, NN_SNDTIMEO, &t, sizeof(t));
-            if(rc < 0)
-            {
-                ParodusError ("Unable to set socket timeout (errno=%d, %s)\n",errno, strerror(errno));
-            }
-            
-            rc = nn_connect(sock, (*msg)->u.reg.url);
-            if(rc < 0)
-            {
-                ParodusError ("Unable to connect socket (errno=%d, %s)\n",errno, strerror(errno));
-                nn_close (sock);
-                
-            }
-            else
-            {
-            	reg_list_item_t *new_node = NULL;
-		new_node=(reg_list_item_t *)malloc(sizeof(reg_list_item_t));
-		if(new_node)
+	//new_node indicates the new clients which needs to be added to list
+	int rc = -1;
+	int sock;
+	int retStatus = -1;
+	if(((*msg)->u.reg.service_name !=NULL && strnlen((*msg)->u.reg.service_name,sizeof((*msg)->u.reg.service_name)) >0) && ((*msg)->u.reg.url != NULL && strnlen((*msg)->u.reg.url,sizeof((*msg)->u.reg.url)) >0 ))
+	{
+		sock = nn_socket( AF_SP, NN_PUSH );
+		ParodusPrint("sock created for adding entries to list: %d\n", sock);
+		if(sock >= 0)
 		{
-    			memset( new_node, 0, sizeof( reg_list_item_t ) );
-    			new_node->sock = sock;
-    			ParodusPrint("new_node->sock is %d\n", new_node->sock);
-    			
-    			
-	                ParodusPrint("(*msg)->u.reg.service_name is %s\n", (*msg)->u.reg.service_name);
-	                ParodusPrint("(*msg)->u.reg.url is %s\n", (*msg)->u.reg.url);
+			int t = NANOMSG_SOCKET_TIMEOUT_MSEC;
+			rc = nn_setsockopt(sock, NN_SOL_SOCKET, NN_SNDTIMEO, &t, sizeof(t));
+			if(rc < 0)
+			{
+				ParodusError ("Unable to set socket timeout (errno=%d, %s)\n",errno, strerror(errno));
+			}
 
-	                parStrncpy(new_node->service_name, (*msg)->u.reg.service_name, sizeof(new_node->service_name));
-	                parStrncpy(new_node->url, (*msg)->u.reg.url, sizeof(new_node->url));
-	                new_node->next=NULL;
-	                 
-	                if (g_head == NULL) //adding first client
-	                {
-	                        ParodusInfo("Adding first client to list\n");
-	                        g_head = new_node;
-	                }
-	                else   //client2 onwards           
-	                {
-	                        reg_list_item_t *temp = NULL;
-	                        ParodusInfo("Adding clients to list\n");
-	                        temp = g_head;
+			rc = nn_connect(sock, (*msg)->u.reg.url);
+			if(rc < 0)
+			{
+				ParodusError ("Unable to connect socket (errno=%d, %s)\n",errno, strerror(errno));
+				nn_close (sock);
 
-	                        while(temp->next !=NULL)
-	                        {
-		                        temp=temp->next;
-	                        }
+			}
+			else
+			{
+				reg_list_item_t *new_node = NULL;
+				new_node=(reg_list_item_t *)malloc(sizeof(reg_list_item_t));
+				if(new_node)
+				{
+					memset( new_node, 0, sizeof( reg_list_item_t ) );
+					new_node->sock = sock;
+					ParodusPrint("new_node->sock is %d\n", new_node->sock);
 
-	                        temp->next=new_node;
-	                }
 
-	                ParodusPrint("client is added to list\n");
-	                ParodusInfo("client service %s is added to list with url: %s\n", new_node->service_name, new_node->url);
-	                if((strcmp(new_node->service_name, (*msg)->u.reg.service_name)==0)&& (strcmp(new_node->url, (*msg)->u.reg.url)==0))
-	                {
-	                	numOfClients = numOfClients + 1;
-	                        ParodusInfo("sending auth status to reg client\n");
-	                        retStatus = sendAuthStatus(new_node);
-	                }
-	                else
-	                {
-	                        ParodusError("nanomsg client registration failed\n");
-	                        
-	                }
-	            }
-            }
-    }
-    else
-    {
-            ParodusError("Unable to create socket (errno=%d, %s)\n",errno, strerror(errno));
-            
-    }
-    ParodusPrint("addToList return %d\n", retStatus);
-    return retStatus;
-   
+					ParodusPrint("(*msg)->u.reg.service_name is %s\n", (*msg)->u.reg.service_name);
+					ParodusPrint("(*msg)->u.reg.url is %s\n", (*msg)->u.reg.url);
+
+					parStrncpy(new_node->service_name, (*msg)->u.reg.service_name, sizeof(new_node->service_name));
+					parStrncpy(new_node->url, (*msg)->u.reg.url, sizeof(new_node->url));
+					new_node->next=NULL;
+
+					if (g_head == NULL) //adding first client
+					{
+						ParodusInfo("Adding first client to list\n");
+						g_head = new_node;
+					}
+					else   //client2 onwards
+					{
+						reg_list_item_t *temp = NULL;
+						ParodusInfo("Adding clients to list\n");
+						temp = g_head;
+
+						while(temp->next !=NULL)
+						{
+							temp=temp->next;
+						}
+
+						temp->next=new_node;
+					}
+
+					ParodusPrint("client is added to list\n");
+					ParodusInfo("client service %s is added to list with url: %s\n", new_node->service_name, new_node->url);
+					if((strcmp(new_node->service_name, (*msg)->u.reg.service_name)==0)&& (strcmp(new_node->url, (*msg)->u.reg.url)==0))
+					{
+						numOfClients = numOfClients + 1;
+						ParodusInfo("sending auth status to reg client\n");
+						retStatus = sendAuthStatus(new_node);
+					}
+					else
+					{
+						ParodusError("nanomsg client registration failed\n");
+
+					}
+				}
+			}
+		}
+		else
+		{
+			ParodusError("Unable to create socket (errno=%d, %s)\n",errno, strerror(errno));
+
+		}
+	}
+	ParodusPrint("addToList return %d\n", retStatus);
+	return retStatus;
+
 }
 
 /** To send auth status to clients in list ***/
@@ -139,7 +142,7 @@ int sendAuthStatus(reg_list_item_t *new_node)
 {
 	int byte = 0, nbytes = -1;	
 	size_t size=0;
-	void *auth_bytes;
+	void *auth_bytes = NULL;
 	wrp_msg_t auth_msg_var;
 	int status = -1;
 	
@@ -168,11 +171,12 @@ int sendAuthStatus(reg_list_item_t *new_node)
 	        {
 	            ParodusError("send registration failed\n");
 	        }
+			free(auth_bytes);
+			auth_bytes = NULL;
         }
 	byte = 0;
 	size = 0;
-	free(auth_bytes);
-	auth_bytes = NULL;
+
 	return status;
 }
 
@@ -189,13 +193,12 @@ int deleteFromList(char* service_name)
 	}
 	ParodusInfo("service to be deleted: %s\n", service_name);
 
-	prev_node = NULL;
 	curr_node = g_head ;	
 
 	// Traverse to get the link to be deleted
 	while( NULL != curr_node )
 	{
-		if(strcmp(curr_node->service_name, service_name) == 0)
+		if(curr_node->service_name != NULL && strcmp(curr_node->service_name, service_name) == 0)
 		{
 			ParodusPrint("Found the node to delete\n");
 			if( NULL == prev_node )

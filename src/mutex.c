@@ -147,6 +147,7 @@ void destroyMutex(noPollPtr _mutex)
     } else {
         ParodusPrint("Mutex destroyed \n");
     }
+    if(mutex)
     free(mutex);
 
     return;

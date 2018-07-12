@@ -227,7 +227,7 @@ void *processUpstreamMessage()
                         temp = get_global_node();
                         while(temp!=NULL)
                         {
-                            if(strcmp(temp->service_name, msg->u.reg.service_name)==0)
+                            if(temp->service_name != NULL && msg->u.reg.service_name != NULL && strcmp(temp->service_name, msg->u.reg.service_name)==0)
                             {
                                 ParodusInfo("match found, client is already registered\n");
                                 parStrncpy(temp->url,msg->u.reg.url, sizeof(temp->url));
@@ -281,6 +281,10 @@ void *processUpstreamMessage()
                         if(status == 0)
                         {
                             ParodusPrint("sent auth status to reg client\n");
+                        }
+                        else
+                        {
+                            ParodusError("Failed to add/send auth status to reg client\n");
                         }
                     }
                 }

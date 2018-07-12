@@ -136,7 +136,7 @@ static void execute_token_script(char *token, char *name, size_t len, char *mac,
 {
     FILE* out = NULL, *file = NULL;
     char command[MAX_BUF_SIZE] = {'\0'};
-    if(strlen(name)>0)
+    if(strlen(name)>0 && token != NULL)
     {
         file = fopen(name, "r");
         if(file)
@@ -185,10 +185,10 @@ int server_is_http (const char *full_url,
 	int http_match;
 	const char *ptr;
 	
-	if (strncmp(full_url, "https://", 8) == 0) {
+	if (full_url != NULL && strncmp(full_url, "https://", 8) == 0) {
 		http_match = 0;
 		ptr = full_url + 8;
-	} else if (strncmp(full_url, "http://", 7) == 0) {
+	} else if (full_url != NULL && strncmp(full_url, "http://", 7) == 0) {
 		http_match = 1;
 		ptr = full_url + 7;	
 	} else {
@@ -209,43 +209,56 @@ int parse_webpa_url(const char *full_url,
 	char *port_val;
 	char *end_port;
 	size_t server_len;
-	int http_match;
-
-	ParodusInfo ("full url: %s\n", full_url);
-	http_match = server_is_http (full_url, &server_ptr);
-	if (http_match < 0)
-		return http_match;
-
-	ParodusInfo ("server address copied from url\n");
-	parStrncpy (server_addr, server_ptr, server_addr_buflen);
-	server_len = strlen(server_addr);
-	// If there's a '/' on end, null it out
-	if ((server_len>0) && (server_addr[server_len-1] == '/'))
-		server_addr[server_len-1] = '\0';
-	// Look for ':'
-	port_val = strchr (server_addr, ':');
-
-	if (NULL == port_val) {
-		if (http_match)
-			parStrncpy (port_buf, "80", port_buflen);
-		else
-			parStrncpy (port_buf, "443", port_buflen);
-
-		end_port = strchr (server_addr, '/');
-		if (NULL != end_port) {
-			*end_port = '\0'; // terminate server address with null
+	int http_match = -1;
+	if(full_url != NULL && server_addr != NULL && port_buf != NULL)
+    {
+		ParodusInfo ("full url: %s\n", full_url);
+		http_match = server_is_http (full_url, &server_ptr);
+		if (http_match < 0)
+		{
+			return http_match;
 		}
+		
+		ParodusInfo ("server address copied from url\n");
+		parStrncpy (server_addr, server_ptr, server_addr_buflen);
+		server_len = strlen(server_addr);
+		// If there's a '/' on end, null it out
+		if ((server_len>0) && (server_addr[server_len-1] == '/'))
+		{
+			server_addr[server_len-1] = '\0';
+		}
+		// Look for ':'
+		port_val = strchr (server_addr, ':');
 
-	} else {
-		*port_val = '\0'; // terminate server address with null
-		port_val++;
-		end_port = strchr (port_val, '/');
-		if (NULL != end_port)
-			*end_port = '\0'; // terminate port with null
-		parStrncpy (port_buf, port_val, port_buflen);
-	}
-	ParodusInfo ("server %s, port %s, http_match %d\n", 
+		if (NULL == port_val) 
+		{
+			if (http_match)
+			{
+				parStrncpy (port_buf, "80", port_buflen);
+			}
+			else
+			{
+				parStrncpy (port_buf, "443", port_buflen);
+			}
+			end_port = strchr (server_addr, '/');
+			if (NULL != end_port) {
+				*end_port = '\0'; // terminate server address with null
+			}
+		} 
+		else
+		{
+			*port_val = '\0'; // terminate server address with null
+			port_val++;
+			end_port = strchr (port_val, '/');
+			if (NULL != end_port)
+			{
+				*end_port = '\0'; // terminate port with null
+			}
+			parStrncpy (port_buf, port_val, port_buflen);
+		}
+		ParodusInfo ("server %s, port %s, http_match %d\n", 
 		server_addr, port_buf, http_match);
+	}
 	return http_match;
 
 }
@@ -481,6 +494,10 @@ int parseCommandLine(int argc,char **argv,ParodusCfg * cfg)
 
 	if (0 == strlen (cfg->webpa_url)) {
 		ParodusError ("Missing webpa url argument\n");
+		return -1;
+	}
+    if (0 == strlen (cfg->hw_mac)) {
+		ParodusError ("Missing hardware mac --hw-mac argument, abort the process\n");
 		return -1;
 	}
 

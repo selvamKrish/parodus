@@ -112,7 +112,9 @@ char* getWebpaConveyHeader()
 	    encodedData[j]='\0';
 	    ParodusPrint("Encoded X-WebPA-Convey Header: [%zd]%s\n", strlen(encodedData), encodedData);
     }
-    free(buffer);
+    if(buffer != NULL){
+        free(buffer);
+    }
     cJSON_Delete(response);
 
     if( 0 < strlen(encodedData) ) {
@@ -125,13 +127,18 @@ char* getWebpaConveyHeader()
 void timespec_diff(struct timespec *start, struct timespec *stop,
                    struct timespec *diff)
 {
-    if ((stop->tv_nsec - start->tv_nsec) < 0) {
-        diff->tv_sec = stop->tv_sec - start->tv_sec - 1;
-        diff->tv_nsec = stop->tv_nsec - start->tv_nsec + 1000000000UL;
-    } else {
-        diff->tv_sec = stop->tv_sec - start->tv_sec;
-        diff->tv_nsec = stop->tv_nsec - start->tv_nsec;
-    }
-
-    return;
+	if(start != NULL && stop != NULL && diff != NULL)
+	{
+		if ((stop->tv_nsec - start->tv_nsec) < 0)
+		{
+			diff->tv_sec = stop->tv_sec - start->tv_sec - 1;
+			diff->tv_nsec = stop->tv_nsec - start->tv_nsec + 1000000000UL;
+		}
+		else
+		{
+			diff->tv_sec = stop->tv_sec - start->tv_sec;
+			diff->tv_nsec = stop->tv_nsec - start->tv_nsec;
+		}
+	}
+	return;
 }

@@ -24,24 +24,33 @@
 
 void getCurrentTime(struct timespec *timer)
 {
-	clock_gettime(CLOCK_REALTIME, timer);
+	if(timer != NULL)
+    {
+        clock_gettime(CLOCK_REALTIME, timer);
+    }
 }
 
 uint64_t getCurrentTimeInMicroSeconds(struct timespec *timer)
 {
     uint64_t systime = 0;
+    if(timer != NULL)
+    {
     clock_gettime(CLOCK_REALTIME, timer);       
     ParodusPrint("timer->tv_sec : %lu\n",timer->tv_sec);
     ParodusPrint("timer->tv_nsec : %lu\n",timer->tv_nsec);
     systime = (uint64_t)timer->tv_sec * 1000000L + timer->tv_nsec/ 1000;
+    }
     return systime;	
 }
 
 long timeValDiff(struct timespec *starttime, struct timespec *finishtime)
 {
-	long msec;
-	msec=(finishtime->tv_sec-starttime->tv_sec)*1000;
+	long msec = -1;
+    if(starttime != NULL && finishtime != NULL)
+    {
+    msec=(finishtime->tv_sec-starttime->tv_sec)*1000;
 	msec+=(finishtime->tv_nsec-starttime->tv_nsec)/1000000;
+    }
 	return msec;
 }
 
