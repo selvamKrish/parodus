@@ -120,7 +120,7 @@ void listenerOnMessage(void * msg, size_t msgSize)
                                 ParodusPrint("sending to nanomsg client %s\n", dest);
                                 bytes = nn_send(temp->sock, recivedMsg, msgSize, 0);
                                 ParodusInfo("sent downstream message to reg_client '%s'\n",temp->url);
-                                ParodusPrint("downstream bytes sent:%d\n", bytes);
+                                ParodusInfo("downstream bytes sent:%d\n", bytes);
                                 destFlag =1;
                                 break;
                             }
