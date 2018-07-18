@@ -551,7 +551,7 @@ int parseCommandLine(int argc,char **argv,ParodusCfg * cfg)
 * execute_token_script func with args as parodus read script.
 */
 
-void createNewAuthToken(char *newToken, size_t len)
+void createNewAuthToken(char **newToken, size_t len)
 {
 	//Call create script
 	char output[12] = {'\0'};
@@ -559,7 +559,8 @@ void createNewAuthToken(char *newToken, size_t len)
   	if (strlen(output)>0  && strcmp(output,"SUCCESS")==0)
 	{
 		//Call read script 
-		execute_token_script(newToken,get_parodus_cfg()->token_read_script,len,get_parodus_cfg()->hw_mac,get_parodus_cfg()->hw_serial_number);
+        *newToken = (char *)malloc(len);
+		execute_token_script(*newToken,get_parodus_cfg()->token_read_script,len,get_parodus_cfg()->hw_mac,get_parodus_cfg()->hw_serial_number);
 	}	
 	else 
 	{
@@ -593,8 +594,9 @@ void getAuthToken(ParodusCfg *cfg)
             if (cfg->webpa_auth_token != NULL) {
                 free(cfg->webpa_auth_token);
             }
-            cfg->webpa_auth_token = (char *) malloc(sizeof(char) * SIZE_OF_WEBPA_AUTH_TOKEN);
-			createNewAuthToken(cfg->webpa_auth_token, SIZE_OF_WEBPA_AUTH_TOKEN);
+            //cfg->webpa_auth_token = (char *) malloc(sizeof(char) * SIZE_OF_WEBPA_AUTH_TOKEN);
+            cfg->webpa_auth_token = NULL;
+			createNewAuthToken(&cfg->webpa_auth_token, SIZE_OF_WEBPA_AUTH_TOKEN);
 		}
 		else
 		{

@@ -108,7 +108,7 @@ typedef struct
 /*----------------------------------------------------------------------------*/
 
 void loadParodusCfg(ParodusCfg * config,ParodusCfg *cfg);
-void createNewAuthToken(char *newToken, size_t len);
+void createNewAuthToken(char **newToken, size_t len);
 
 /**
  * parse command line arguments and create config structure

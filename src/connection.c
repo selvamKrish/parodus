@@ -300,10 +300,15 @@ int createNopollConnection(noPollCtx *ctx)
 					//Get new token and update auth header
 
 					if (strlen(cfg->token_acquisition_script) >0) {
-						createNewAuthToken(cfg->webpa_auth_token,sizeof(cfg->webpa_auth_token));
+						if(cfg->webpa_auth_token)
+						{
+							free(cfg->webpa_auth_token);
+						}
+						cfg->webpa_auth_token = NULL;
+						createNewAuthToken(&cfg->webpa_auth_token,SIZE_OF_WEBPA_AUTH_TOKEN);
 					}
 
-					extra_headers = build_extra_headers( (0 < strlen(cfg->webpa_auth_token) ? cfg->webpa_auth_token : NULL),
+					extra_headers = build_extra_headers( (cfg->webpa_auth_token ? cfg->webpa_auth_token : NULL),
 														device_id, user_agent, conveyHeader );
 					
 					//reset c=2 to start backoffRetryTime as retrying 
