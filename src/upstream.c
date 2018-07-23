@@ -81,21 +81,30 @@ void packMetaData()
     char boot_time[256]={'\0'};
     //Pack the metadata initially to reuse for every upstream msg sending to server
     ParodusPrint("-------------- Packing metadata ----------------\n");
-    sprintf(boot_time, "%d", get_parodus_cfg()->boot_time);
+    ParodusCfg *cfg = get_parodus_cfg();
+    if(cfg == NULL)
+    {
+        ParodusError("Parodus configuration error\n");
+        return;
+    }
+    if(cfg->boot_time)
+    {
+        sprintf(boot_time, "%d", cfg->boot_time);
+    }
 
     struct data meta_pack[METADATA_COUNT] = {
-            {HW_MODELNAME, get_parodus_cfg()->hw_model},
-            {HW_SERIALNUMBER, get_parodus_cfg()->hw_serial_number},
-            {HW_MANUFACTURER, get_parodus_cfg()->hw_manufacturer},
-            {HW_DEVICEMAC, get_parodus_cfg()->hw_mac},
-            {HW_LAST_REBOOT_REASON, get_parodus_cfg()->hw_last_reboot_reason},
-            {FIRMWARE_NAME , get_parodus_cfg()->fw_name},
+            {HW_MODELNAME, cfg->hw_model},
+            {HW_SERIALNUMBER, cfg->hw_serial_number},
+            {HW_MANUFACTURER, cfg->hw_manufacturer},
+            {HW_DEVICEMAC, cfg->hw_mac},
+            {HW_LAST_REBOOT_REASON, cfg->hw_last_reboot_reason},
+            {FIRMWARE_NAME , cfg->fw_name},
             {BOOT_TIME, boot_time},
             {LAST_RECONNECT_REASON, get_global_reconnect_reason()},
-            {WEBPA_PROTOCOL, get_parodus_cfg()->webpa_protocol},
-            {WEBPA_UUID,get_parodus_cfg()->webpa_uuid},
-            {WEBPA_INTERFACE, get_parodus_cfg()->webpa_interface_used},
-            {PARTNER_ID, get_parodus_cfg()->partner_id}
+            {WEBPA_PROTOCOL, cfg->webpa_protocol},
+            {WEBPA_UUID,cfg->webpa_uuid},
+            {WEBPA_INTERFACE, cfg->webpa_interface_used},
+            {PARTNER_ID, cfg->partner_id}
         };
 
     const data_t metapack = {METADATA_COUNT, meta_pack};

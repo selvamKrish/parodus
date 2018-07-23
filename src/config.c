@@ -155,7 +155,7 @@ static void execute_token_script(char *token, char *name, size_t len, char *mac,
 {
     FILE* out = NULL, *file = NULL;
     char command[MAX_BUF_SIZE] = {'\0'};
-    if(strlen(name)>0)
+    if(name && strlen(name)>0 && mac && serNum)
     {
         file = fopen(name, "r");
         if(file)
@@ -173,6 +173,8 @@ static void execute_token_script(char *token, char *name, size_t len, char *mac,
         {
             ParodusError ("File %s open error\n", name);
         }
+    }else{
+        ParodusError("Failed to execute token script, invalid args passed\n");
     }
 }
 
@@ -201,13 +203,13 @@ int parse_mac_address (char *target, const char *arg)
 int server_is_http (const char *full_url,
 	const char **server_ptr)
 {
-	int http_match;
+	int http_match = -1;
 	const char *ptr;
 	
-	if (strncmp(full_url, "https://", 8) == 0) {
+	if (full_url && strncmp(full_url, "https://", 8) == 0) {
 		http_match = 0;
 		ptr = full_url + 8;
-	} else if (strncmp(full_url, "http://", 7) == 0) {
+	} else if (full_url && strncmp(full_url, "http://", 7) == 0) {
 		http_match = 1;
 		ptr = full_url + 7;	
 	} else {
@@ -227,9 +229,10 @@ int parse_webpa_url(const char *full_url,
 	const char *server_ptr;
 	char *port_val;
 	char *end_port;
-	size_t server_len;
-	int http_match;
-
+	size_t server_len = 0;
+	int http_match = -1;
+    if(full_url != NULL && server_addr != NULL && port_buf != NULL)
+    {
 	ParodusInfo ("full url: %s\n", full_url);
 	http_match = server_is_http (full_url, &server_ptr);
 	if (http_match < 0)
@@ -265,6 +268,7 @@ int parse_webpa_url(const char *full_url,
 	}
 	ParodusInfo ("server %s, port %s, http_match %d\n", 
 		server_addr, port_buf, http_match);
+    }
 	return http_match;
 
 }
@@ -559,7 +563,7 @@ void createNewAuthToken(char **newToken, size_t len)
   	if (strlen(output)>0  && strcmp(output,"SUCCESS")==0)
 	{
 		//Call read script 
-        *newToken = (char *)malloc(len);
+        *newToken = (char *)malloc(len * sizeof(char));
 		execute_token_script(*newToken,get_parodus_cfg()->token_read_script,len,get_parodus_cfg()->hw_mac,get_parodus_cfg()->hw_serial_number);
 	}	
 	else 

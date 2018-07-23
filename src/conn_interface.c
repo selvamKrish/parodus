@@ -78,6 +78,7 @@ void createSocketConnection(void (* initKeypress)())
     if (!ctx) 
     {
         ParodusError("\nError creating nopoll context\n");
+        return;
     }
 
     #ifdef NOPOLL_LOGGER

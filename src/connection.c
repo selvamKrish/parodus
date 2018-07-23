@@ -102,7 +102,7 @@ int createNopollConnection(noPollCtx *ctx)
 	int backoffRetryTime = 0;
     int max_retry_sleep;
     char port[8];
-    char server_Address[256];
+    char server_Address[256] = {'\0'};
     char *jwt_server_url= NULL;
     char *redirectURL = NULL;
     int status=0;
@@ -148,7 +148,7 @@ int createNopollConnection(noPollCtx *ctx)
 	ParodusInfo("Device_id %s\n",device_id);
 	
 	extra_headers = build_extra_headers( 
-    ( (cfg->webpa_auth_token&& (0 < strlen(cfg->webpa_auth_token))) ? cfg->webpa_auth_token : NULL), 
+    ( (cfg->webpa_auth_token && (0 < strlen(cfg->webpa_auth_token))) ? cfg->webpa_auth_token : NULL),
     device_id, user_agent, conveyHeader );	     
 	
 	do
@@ -261,7 +261,7 @@ int createNopollConnection(noPollCtx *ctx)
 				{
 					ParodusError("Received temporary redirection response message %s\n", redirectURL);
 					// Extract server Address and port from the redirectURL
-					if (strncmp (redirectURL, "Redirect:", 9) == 0)
+					if (redirectURL && strncmp (redirectURL, "Redirect:", 9) == 0)
 						redirectURL += 9;
 					allow_insecure = parse_webpa_url (redirectURL,
 						server_Address, (int) sizeof(server_Address),
@@ -299,7 +299,7 @@ int createNopollConnection(noPollCtx *ctx)
 					ParodusError("Received Unauthorized response with status: %d\n", status);
 					//Get new token and update auth header
 
-					if (strlen(cfg->token_acquisition_script) >0) {
+					if (cfg->token_acquisition_script && strlen(cfg->token_acquisition_script) >0) {
 						if(cfg->webpa_auth_token)
 						{
 							free(cfg->webpa_auth_token);
@@ -434,8 +434,8 @@ int createNopollConnection(noPollCtx *ctx)
 
 	if(redirectURL != NULL)
 	{
-		//free(redirectURL);
-		//redirectURL = NULL;
+		free(redirectURL);
+		redirectURL = NULL;
 	}
 
 	if (NULL != extra_headers)

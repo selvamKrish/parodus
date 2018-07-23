@@ -32,7 +32,7 @@ char* getWebpaConveyHeader()
 {
     cJSON *response = cJSON_CreateObject();
     char *buffer = NULL;
-    static char encodedData[1024];
+    static char encodedData[1024] = {'\0'};
     int  encodedDataSize = 1024;
     char * reconnect_reason = get_global_reconnect_reason();
     int i =0, j=0;
@@ -113,8 +113,15 @@ char* getWebpaConveyHeader()
 	    encodedData[j]='\0';
 	    ParodusPrint("Encoded X-WebPA-Convey Header: [%zd]%s\n", strlen(encodedData), encodedData);
     }
-    free(buffer);
-    cJSON_Delete(response);
+    if(buffer)
+    {
+        free(buffer);
+    }
+
+    if(response)
+    {
+        cJSON_Delete(response);
+    }
 
     if( 0 < strlen(encodedData) ) {
         return encodedData;
