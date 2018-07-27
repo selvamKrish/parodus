@@ -30,8 +30,8 @@
 typedef struct reg_list_item
 {
 	int sock;
-	char service_name[32];
-	char url[100];
+	char *service_name;
+	char *url;
 	struct reg_list_item *next;
 } reg_list_item_t;
 

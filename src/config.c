@@ -338,6 +338,8 @@ int parseCommandLine(int argc,char **argv,ParodusCfg * cfg)
 	cfg->jwt_algo = 0;
 	//parStrncpy (cfg->jwt_key, "", sizeof(cfg->jwt_key));
 	cfg->crud_config_file = NULL;
+    cfg->hw_mac = NULL;
+    cfg->webpa_url = NULL;
 	optind = 1;  /* We need this if parseCommandLine is called again */
     int option_index = 0;/* getopt_long stores the option index here. */
     while (1)
@@ -516,8 +518,13 @@ int parseCommandLine(int argc,char **argv,ParodusCfg * cfg)
         }
     }
 
-	if (cfg->webpa_url && (0 == strlen (cfg->webpa_url))) {
-		ParodusError ("Missing webpa url argument\n");
+	if (cfg->webpa_url == NULL) {
+		ParodusError ("Missing webpa url argument, abort the process\n");
+		return -1;
+	}
+
+    if (cfg->hw_mac == NULL) {
+		ParodusError ("Missing hw mac argument, abort the process\n");
 		return -1;
 	}
 

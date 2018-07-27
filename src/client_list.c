@@ -80,14 +80,22 @@ int addToList( wrp_msg_t **msg)
     			new_node->sock = sock;
     			ParodusPrint("new_node->sock is %d\n", new_node->sock);
     			
-    			
-	                ParodusPrint("(*msg)->u.reg.service_name is %s\n", (*msg)->u.reg.service_name);
-	                ParodusPrint("(*msg)->u.reg.url is %s\n", (*msg)->u.reg.url);
+	                //parStrncpy(new_node->service_name, (*msg)->u.reg.service_name, sizeof(new_node->service_name));
+	                //parStrncpy(new_node->url, (*msg)->u.reg.url, sizeof(new_node->url));
+					if((*msg)->u.reg.service_name && (*msg)->u.reg.url)
+					{
+						ParodusPrint("(*msg)->u.reg.service_name is %s\n", (*msg)->u.reg.service_name);
+						ParodusPrint("(*msg)->u.reg.url is %s\n", (*msg)->u.reg.url);
+						new_node->service_name = strdup((*msg)->u.reg.service_name);
+						new_node->url	=	strdup((*msg)->u.reg.url);
+						new_node->next = NULL;
+					}
+					else
+					{
+						free(new_node);
+						return retStatus;
+					}
 
-	                parStrncpy(new_node->service_name, (*msg)->u.reg.service_name, sizeof(new_node->service_name));
-	                parStrncpy(new_node->url, (*msg)->u.reg.url, sizeof(new_node->url));
-	                new_node->next=NULL;
-	                 
 	                if (g_head == NULL) //adding first client
 	                {
 	                        ParodusInfo("Adding first client to list\n");
@@ -109,17 +117,11 @@ int addToList( wrp_msg_t **msg)
 
 	                ParodusPrint("client is added to list\n");
 	                ParodusInfo("client service %s is added to list with url: %s\n", new_node->service_name, new_node->url);
-	                if((strcmp(new_node->service_name, (*msg)->u.reg.service_name)==0)&& (strcmp(new_node->url, (*msg)->u.reg.url)==0))
-	                {
-	                	numOfClients = numOfClients + 1;
-	                        ParodusInfo("sending auth status to reg client\n");
-	                        retStatus = sendAuthStatus(new_node);
-	                }
-	                else
-	                {
-	                        ParodusError("nanomsg client registration failed\n");
-	                        
-	                }
+
+	                numOfClients = numOfClients + 1;
+	                ParodusInfo("sending auth status to reg client\n");
+	                retStatus = sendAuthStatus(new_node);
+
 	            }
             }
     }
@@ -154,9 +156,8 @@ int sendAuthStatus(reg_list_item_t *new_node)
         }
         else
         {
-	        ParodusInfo("Client %s Registered successfully. Sending Acknowledgement... \n ", new_node->service_name);
-                size = (size_t) nbytes;
-                ParodusInfo("Sending ack:new_node->sock %d service:%s\n", new_node->sock, new_node->service_name);
+	            size = (size_t) nbytes;
+                ParodusInfo("Sending ack:new_node->sock %d to service:%s\n", new_node->sock, new_node->service_name);
 	        byte = nn_send (new_node->sock, auth_bytes, size, 0);
 		
 	        if(byte >=0)
@@ -171,8 +172,11 @@ int sendAuthStatus(reg_list_item_t *new_node)
         }
 	byte = 0;
 	size = 0;
-	free(auth_bytes);
-	auth_bytes = NULL;
+	if(auth_bytes)
+	{
+		free(auth_bytes);
+		auth_bytes = NULL;
+	}
 	return status;
 }
 
@@ -195,7 +199,7 @@ int deleteFromList(char* service_name)
 	// Traverse to get the link to be deleted
 	while( NULL != curr_node )
 	{
-		if(strcmp(curr_node->service_name, service_name) == 0)
+		if(curr_node->service_name && strcmp(curr_node->service_name, service_name) == 0)
 		{
 			ParodusPrint("Found the node to delete\n");
 			if( NULL == prev_node )
@@ -210,11 +214,13 @@ int deleteFromList(char* service_name)
 			}
 			
 			ParodusPrint("Deleting the node\n");
-			free( curr_node );
+			free(curr_node->service_name);
+			free(curr_node->url);
+			free(curr_node);
 			curr_node = NULL;
 			ParodusInfo("Deleted successfully and returning..\n");
 			numOfClients =numOfClients - 1;
-			ParodusPrint("numOfClients after delte is %d\n", numOfClients);
+			ParodusPrint("numOfClients after delete is %d\n", numOfClients);
 			return 0;
 		}
 		

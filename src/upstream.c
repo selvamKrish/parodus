@@ -236,10 +236,23 @@ void *processUpstreamMessage()
                         temp = get_global_node();
                         while(temp!=NULL)
                         {
-                            if(strcmp(temp->service_name, msg->u.reg.service_name)==0)
+                            if(temp->service_name && msg->u.reg.service_name && strcmp(temp->service_name, msg->u.reg.service_name)==0)
                             {
                                 ParodusInfo("match found, client is already registered\n");
-                                parStrncpy(temp->url,msg->u.reg.url, sizeof(temp->url));
+                                //parStrncpy(temp->url,msg->u.reg.url, sizeof(temp->url));
+                                //Over write new client url
+                                if(temp->url && msg->u.reg.url)
+                                {
+                                    free(temp->url);
+                                    temp->url = strdup(msg->u.reg.url);
+                                }
+                                else
+                                {
+                                    ParodusError("Error while over writing new client url\n");
+                                    matchFlag = -1;
+                                    break;
+                                }
+
                                 if(nn_shutdown(temp->sock, 0) < 0)
                                 {
                                     ParodusError ("Failed to shutdown\n");
@@ -253,11 +266,13 @@ void *processUpstreamMessage()
                                     if(rc < 0)
                                     {
                                         ParodusError ("Unable to set socket timeout (errno=%d, %s)\n",errno, strerror(errno));
+                                        matchFlag = -1;
                                     }
                                     rc = nn_connect(temp->sock, msg->u.reg.url); 
                                     if(rc < 0)
                                     {
                                         ParodusError ("Unable to connect socket (errno=%d, %s)\n",errno, strerror(errno));
+                                        matchFlag = -1;
                                     }
                                     else
                                     {
@@ -275,6 +290,7 @@ void *processUpstreamMessage()
                                 else
                                 {
                                     ParodusError("Unable to create socket (errno=%d, %s)\n",errno, strerror(errno));
+                                    matchFlag = -1;
                                 }
                             }
                             ParodusPrint("checking the next item in the list\n");
@@ -290,6 +306,10 @@ void *processUpstreamMessage()
                         if(status == 0)
                         {
                             ParodusPrint("sent auth status to reg client\n");
+                        }
+                        else
+                        {
+                            ParodusError("Failed to add client to list\n");
                         }
                     }
                 }
