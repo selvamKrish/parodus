@@ -25,6 +25,8 @@
 #include <cimplog/cimplog.h>
 
 #define LOGGING_MODULE "PARODUS"
+#define ONBOARD_MODULE "ONBOARDING"
+#define ONBOARD_LOGGING_MODULE "LOG.RDK.ONBOARDING"
 
 /**
 * @brief Enables or disables debug logs.
@@ -33,3 +35,10 @@
 #define ParodusError(...)                   cimplog_error(LOGGING_MODULE, __VA_ARGS__)
 #define ParodusInfo(...)                    cimplog_info(LOGGING_MODULE, __VA_ARGS__)
 #define ParodusPrint(...)                   cimplog_debug(LOGGING_MODULE, __VA_ARGS__)
+
+/*
+For onboarding logging
+*/
+#define OnboardError(...)                   onborading_error(ONBOARD_LOGGING_MODULE,ONBOARD_MODULE, __VA_ARGS__)
+#define OnboardInfo(...)                    onborading_info(ONBOARD_LOGGING_MODULE,ONBOARD_MODULE, __VA_ARGS__)
+#define OnboardPrint(...)                   onborading_debug(ONBOARD_LOGGING_MODULE,ONBOARD_MODULE, __VA_ARGS__)
